@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered Communication Practice Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>AI-Powered Communication Practice Platform</h1>
+            <p>Practice real-life conversations and get instant feedback.</p>
+        </header>
+
+        <main>
+            <div id="scenario-selection" class="card">
+                <h2>Choose a Scenario</h2>
+                <button id="interview-btn" class="scenario-btn">💼 Interview Simulation</button>
+                <button id="free-topic-btn" class="scenario-btn">🗣️ Free Topic</button>
+                <button id="group-discussion-btn" class="scenario-btn">👥 Group Discussion</button>
+                <button id="view-progress-btn" class="scenario-btn progress-btn">📊 View Progress</button>
+            </div>
+
+            <div id="practice-area" class="card hidden">
+                <h2 id="scenario-title"></h2>
+                <div id="transcript-container">
+                    <p class="system-message">Click "Start Speaking" to begin.</p>
+                </div>
+                <div class="controls">
+                    <button id="record-btn">
+                        <span class="icon">🎤</span>
+                        <span class="text">Start Speaking</span>
+                    </button>
+                    <button id="end-session-btn" disabled>End Session & Get Feedback</button>
+                </div>
+                <div id="status" class="status-indicator">Idle</div>
+            </div>
+
+            <div id="feedback-report" class="card hidden">
+                <h2>Feedback Report</h2>
+                <div id="feedback-content"></div>
+                <button id="practice-again-btn">Practice Again</button>
+            </div>
+
+            <div id="progress-overview" class="card hidden">
+                <h2>Progress History</h2>
+                <p>Select a scenario to view your past sessions.</p>
+                <button id="history-interview-btn" class="scenario-btn">💼 Interview History</button>
+                <button id="history-free-topic-btn" class="scenario-btn">🗣️ Free Topic History</button>
+                <button id="history-group-discussion-btn" class="scenario-btn">👥 Group Discussion History</button>
+                <button id="back-to-main-btn" class="back-btn">Back to Main Menu</button>
+            </div>
+
+            <div id="session-details" class="card hidden">
+                <h2 id="history-title"></h2>
+                <div id="history-list-container"></div>
+                <button id="back-to-progress-btn" class="back-btn">Back to Progress Menu</button>
+            </div>
+        </main>
+    </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+
+</html>

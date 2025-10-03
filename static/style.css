@@ -1,0 +1,280 @@
+:root {
+    --primary-color: #4f46e5;
+    --background-color: #f3f4f6;
+    --card-background: #ffffff;
+    --text-color: #111827;
+    --subtle-text: #6b7280;
+    --border-color: #e5e7eb;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+}
+
+.container {
+    width: 100%;
+    max-width: 700px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+header p {
+    font-size: 1.1rem;
+    color: var(--subtle-text);
+}
+
+.card {
+    background-color: var(--card-background);
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--border-color);
+}
+
+.hidden {
+    display: none;
+}
+
+
+/* Scenario Selection */
+
+.scenario-btn {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background-color: #f9fafb;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: all 0.2s ease;
+}
+
+.scenario-btn:not(:disabled):hover {
+    background-color: #f3f4f6;
+    border-color: #d1d5db;
+}
+
+
+/* Practice Area */
+
+#transcript-container {
+    height: 300px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 15px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+    background-color: #f9fafb;
+}
+
+#transcript-container p {
+    margin: 0 0 12px 0;
+}
+
+.user-speech {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.ai-speech {
+    font-weight: 500;
+    color: #374151;
+}
+
+.system-message {
+    font-style: italic;
+    color: var(--subtle-text);
+}
+
+.controls {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+#record-btn,
+#end-session-btn,
+#practice-again-btn {
+    padding: 12px 25px;
+    font-size: 1rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+#record-btn {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+#record-btn.recording {
+    background-color: #dc2626;
+    /* Red for recording */
+}
+
+#end-session-btn,
+#practice-again-btn {
+    background-color: #e5e7eb;
+    color: #374151;
+}
+
+#end-session-btn:hover,
+#practice-again-btn:hover {
+    background-color: #d1d5db;
+}
+
+#end-session-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.status-indicator {
+    text-align: center;
+    margin-top: 15px;
+    color: var(--subtle-text);
+}
+
+
+/* Feedback Report */
+
+#feedback-content h3 {
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 5px;
+    margin-top: 25px;
+}
+
+.feedback-item {
+    background-color: #f9fafb;
+    border: 1px solid var(--border-color);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+#feedback-content .score {
+    text-align: center;
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+
+/* Progress/History View */
+
+.progress-btn {
+    background-color: #16a34a;
+    /* Green */
+    color: white;
+    border-color: #15803d;
+}
+
+.progress-btn:hover {
+    background-color: #15803d !important;
+}
+
+.back-btn {
+    background-color: #e5e7eb;
+    color: #374151;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    margin-top: 20px;
+    display: inline-block;
+}
+
+.back-btn:hover {
+    background-color: #d1d5db;
+}
+
+#history-list-container {
+    margin-top: 20px;
+}
+
+.history-item {
+    background-color: #f9fafb;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.history-item:hover {
+    background-color: #f3f4f6;
+}
+
+.history-item-header {
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.history-item-header p {
+    margin: 0;
+    font-weight: 500;
+}
+
+.history-item-header .score {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.history-item-content {
+    padding: 0 15px 15px 15px;
+    border-top: 1px solid var(--border-color);
+    display: none;
+}
+
+.history-item-content h5 {
+    margin-top: 15px;
+    margin-bottom: 10px;
+    font-size: 1rem;
+    color: var(--text-color);
+}
+
+
+/* NEW: Styles for the transcript block in the history view */
+
+.transcript-block {
+    background-color: #f9fafb;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 15px;
+    max-height: 200px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    /* This makes the text wrap */
+    word-wrap: break-word;
+    /* This breaks long words if necessary */
+}
+
+.transcript-block p {
+    margin: 0 0 10px 0;
+}
