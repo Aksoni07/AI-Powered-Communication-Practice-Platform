@@ -5,6 +5,7 @@ import google.generativeai as genai
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from dotenv import load_dotenv
+import psycopg2
 
 load_dotenv()
 
@@ -13,22 +14,25 @@ CORS(app)
 
 DATABASE = 'practice_history.db'
 
+DATABASE_URL = os.getenv('DATABASE_URL')
+
 # --- Database Initialization ---
 def init_db():
     try:
-        conn = sqlite3.connect(DATABASE)
+        conn = psycopg2.connect(DATABASE_URL)
         cursor = conn.cursor()
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS sessions (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                scenario_type TEXT NOT NULL,
+                id SERIAL PRIMARY KEY,
+                scenario_type VARCHAR(255) NOT NULL,
                 transcript TEXT NOT NULL,
                 feedback_json TEXT NOT NULL,
                 fluency_score INTEGER,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
             )
         ''')
         conn.commit()
+        cursor.close()
         conn.close()
         print("Database initialized successfully.")
     except Exception as e:
@@ -43,15 +47,16 @@ def save_session_to_db(scenario, transcript, feedback_text):
         try:
             score = int(score_value)
         except (ValueError, TypeError):
-            print("Could not parse score, saving as None.")
             pass
-        conn = sqlite3.connect(DATABASE)
+        
+        conn = psycopg2.connect(DATABASE_URL)
         cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO sessions (scenario_type, transcript, feedback_json, fluency_score) VALUES (?, ?, ?, ?)",
+            "INSERT INTO sessions (scenario_type, transcript, feedback_json, fluency_score) VALUES (%s, %s, %s, %s)",
             (scenario, transcript, feedback_text, score)
         )
         conn.commit()
+        cursor.close()
         conn.close()
     except Exception as e:
         print(f"🔴 Error saving session to DB: {e}")
@@ -134,16 +139,17 @@ def index():
 
 @app.route('/history/<scenario_type>', methods=['GET'])
 def get_history(scenario_type):
-    # ... (code is unchanged)
     try:
-        conn = sqlite3.connect(DATABASE)
-        conn.row_factory = sqlite3.Row
+        conn = psycopg2.connect(DATABASE_URL)
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT id, scenario_type, transcript, feedback_json, fluency_score, created_at FROM sessions WHERE scenario_type = ? ORDER BY created_at DESC",
+            "SELECT id, scenario_type, transcript, feedback_json, fluency_score, created_at FROM sessions WHERE scenario_type = %s ORDER BY created_at DESC",
             (scenario_type,)
         )
-        sessions = [dict(row) for row in cursor.fetchall()]
+        # Fetch column names from the cursor description
+        columns = [desc[0] for desc in cursor.description]
+        sessions = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        cursor.close()
         conn.close()
         return jsonify(sessions)
     except Exception as e:
