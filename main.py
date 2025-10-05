@@ -1,75 +1,65 @@
 import os
-import sqlite3
 import json
+from datetime import datetime
+from pymongo import MongoClient
+from bson import ObjectId
 import google.generativeai as genai
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from dotenv import load_dotenv
-import psycopg2
 
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
-DATABASE = 'practice_history.db'
+# --- MongoDB Connection ---
+try:
+    MONGO_URI = os.getenv('MONGO_URI')
+    if not MONGO_URI:
+        raise ValueError("MONGO_URI not found in .env file or environment.")
+    client = MongoClient(MONGO_URI)
+    db = client.ai_coach_db
+    sessions_collection = db.sessions
+    print("✅ MongoDB connected successfully.")
+except Exception as e:
+    print(f"🔴 MongoDB connection error: {e}")
+    exit()
 
-DATABASE_URL = os.getenv('DATABASE_URL')
 
-# --- Database Initialization ---
-def init_db():
-    try:
-        conn = psycopg2.connect(DATABASE_URL)
-        cursor = conn.cursor()
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS sessions (
-                id SERIAL PRIMARY KEY,
-                scenario_type VARCHAR(255) NOT NULL,
-                transcript TEXT NOT NULL,
-                feedback_json TEXT NOT NULL,
-                fluency_score INTEGER,
-                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-            )
-        ''')
-        conn.commit()
-        cursor.close()
-        conn.close()
-        print("Database initialized successfully.")
-    except Exception as e:
-        print(f"🔴 Database initialization error: {e}")
+class JSONEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, ObjectId):
+            return str(o)
+        if isinstance(o, datetime):
+            return o.isoformat()
+        return json.JSONEncoder.default(self, o)
+app.json_encoder = JSONEncoder
 
-# --- Function to save a session to the database ---
+# --- Function to save a session to MongoDB ---
 def save_session_to_db(scenario, transcript, feedback_text):
     try:
         feedback_data = json.loads(feedback_text)
-        score_value = feedback_data.get('overall_fluency_score')
-        score = None
-        try:
-            score = int(score_value)
-        except (ValueError, TypeError):
-            pass
-        
-        conn = psycopg2.connect(DATABASE_URL)
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO sessions (scenario_type, transcript, feedback_json, fluency_score) VALUES (%s, %s, %s, %s)",
-            (scenario, transcript, feedback_text, score)
-        )
-        conn.commit()
-        cursor.close()
-        conn.close()
+        session_document = {
+            "scenario_type": scenario,
+            "transcript": transcript,
+            "feedback": feedback_data,
+            "created_at": datetime.utcnow()
+        }
+        sessions_collection.insert_one(session_document)
+        print("📝 Session saved to MongoDB.")
     except Exception as e:
-        print(f"🔴 Error saving session to DB: {e}")
+        print(f"🔴 Error saving session to MongoDB: {e}")
 
 # --- AI Configuration ---
 try:
     api_key = os.getenv('GEMINI_API_KEY')
     if not api_key:
-        raise ValueError("GEMINI_API_KEY not found in .env file or environment.")
+        raise ValueError("GEMINI_API_KEY not found.")
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel('models/gemini-pro-latest')
 except Exception as e:
-    print(f"🔴 Error configuring API key: {e}")
+    print(f"🔴 Error configuring AI key: {e}")
     exit()
 
 # --- Prompts ---
@@ -111,8 +101,6 @@ Now, generate the JSON feedback report.
 """
 
 
-# This new prompt was added to your main.py file
-
 GROUP_DISCUSSION_PROMPT = """
 You are an AI moderator for a group discussion. You will also play two distinct characters: Ben and Chloe. The user is the third participant.
 
@@ -132,32 +120,32 @@ RULES:
 5.  Keep your points concise to encourage back-and-forth.
 """
 
-# --- Routes ---
+
 @app.route('/')
 def index():
     return render_template('index.html')
 
+# Route to get history with manual JSON conversion 
 @app.route('/history/<scenario_type>', methods=['GET'])
 def get_history(scenario_type):
     try:
-        conn = psycopg2.connect(DATABASE_URL)
-        cursor = conn.cursor()
-        cursor.execute(
-            "SELECT id, scenario_type, transcript, feedback_json, fluency_score, created_at FROM sessions WHERE scenario_type = %s ORDER BY created_at DESC",
-            (scenario_type,)
-        )
-        # Fetch column names from the cursor description
-        columns = [desc[0] for desc in cursor.description]
-        sessions = [dict(zip(columns, row)) for row in cursor.fetchall()]
-        cursor.close()
-        conn.close()
-        return jsonify(sessions)
+        sessions_cursor = sessions_collection.find(
+            {"scenario_type": scenario_type}
+        ).sort("created_at", -1).limit(100)
+        
+        # Manually convert each document to be JSON-safe
+        result = []
+        for session in sessions_cursor:
+            session['_id'] = str(session['_id']) # Convert ObjectId to string
+            if 'created_at' in session:
+                session['created_at'] = session['created_at'].isoformat() # Convert datetime to string
+            result.append(session)
+
+            
+        return jsonify(result)
     except Exception as e:
-        print(f"🔴 Error fetching history: {e}")
+        print(f"🔴 Error fetching history from MongoDB: {e}")
         return jsonify({"error": str(e)}), 500
-    
-
-
 
 @app.route('/generate', methods=['POST'])
 def generate_content():
@@ -192,5 +180,4 @@ def generate_content():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    init_db()
     app.run(host='0.0.0.0', port=5000, debug=True)

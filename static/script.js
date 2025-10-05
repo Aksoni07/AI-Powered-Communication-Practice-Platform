@@ -1,4 +1,4 @@
-// --- DOM Element References ---
+//  DOM Element References 
 const scenarioSelection = document.getElementById('scenario-selection');
 const practiceArea = document.getElementById('practice-area');
 const feedbackReport = document.getElementById('feedback-report');
@@ -23,7 +23,7 @@ const historyTitle = document.getElementById('history-title');
 const historyListContainer = document.getElementById('history-list-container');
 const backToProgressBtn = document.getElementById('back-to-progress-btn');
 
-// --- State Management ---
+//  State Managements
 let isRecording = false;
 let fullTranscript = "";
 let recognition;
@@ -33,7 +33,7 @@ let currentScenario = "";
 
 const BACKEND_URL = '/generate';
 
-// --- Voice & Speech Recognition Setup ---
+//  Voice & Speech Recognition Setup 
 function loadVoices() {
     availableVoices = window.speechSynthesis.getVoices();
 }
@@ -101,7 +101,7 @@ recordBtn.addEventListener('click', () => {
     }
 });
 
-// --- Core App Logic ---
+//  Core App Logic 
 function showScreen(screenToShow) {
     [scenarioSelection, practiceArea, feedbackReport, progressOverview, sessionDetails].forEach(screen => {
         screen.classList.add('hidden');
@@ -119,7 +119,7 @@ function startScenario(title, scenario) {
     endSessionBtn.disabled = false;
 }
 
-// CORRECTED VERSION of handleUserSpeech
+
 async function handleUserSpeech(userText) {
     if (userText) {
         appendMessage(userText, 'user-speech', 'You');
@@ -231,7 +231,7 @@ function displayFeedback(feedback, targetElement) {
     targetElement.innerHTML = html;
 }
 
-// --- History & Progress Functions ---
+//  History & Progress Functions 
 async function fetchHistory(scenarioType, title) {
     showScreen(sessionDetails);
     historyTitle.textContent = title;
@@ -271,23 +271,30 @@ function formatTranscript(transcript) {
     return html;
 }
 
+// Find the displayHistoryList function in your script.js file and replace it with this:
 function displayHistoryList(sessions) {
     let html = "";
     sessions.forEach(session => {
         const date = new Date(session.created_at).toLocaleString();
+
+        // MODIFIED: Accessing nested feedback object from MongoDB document
+        const feedback_json = JSON.stringify(session.feedback);
+        const fluency_score = session.feedback.overall_fluency_score;
+
         const transcript_escaped = session.transcript.replace(/'/g, "&apos;").replace(/"/g, "&quot;");
-        const feedback_escaped = session.feedback_json.replace(/'/g, "&apos;");
+        const feedback_escaped = feedback_json.replace(/'/g, "&apos;");
         html += `
             <div class="history-item" data-transcript='${transcript_escaped}' data-feedback='${feedback_escaped}'>
                 <div class="history-item-header">
                     <p>${date}</p>
-                    <p class="score">${session.fluency_score}/10</p>
+                    <p class="score">${fluency_score}/10</p>
                 </div>
                 <div class="history-item-content"></div>
             </div>`;
     });
     historyListContainer.innerHTML = html;
 
+    // This part that adds click listeners remains the same
     document.querySelectorAll('.history-item').forEach(item => {
         item.addEventListener('click', () => {
             const contentDiv = item.querySelector('.history-item-content');
@@ -323,7 +330,7 @@ endSessionBtn.addEventListener('click', () => {
 });
 
 
-// --- Event Listeners ---
+//  Event Listeners 
 interviewBtn.addEventListener('click', () => startScenario('Interview Simulation', 'interview'));
 freeTopicBtn.addEventListener('click', () => startScenario('Free Topic', 'free_topic'));
 groupDiscussionBtn.addEventListener('click', () => startScenario('Group Discussion', 'group_discussion'));
