@@ -1,53 +1,53 @@
-AI-Powered Communication Practice Platform 🎙️
+# AI-Powered Communication Practice Platform 🎙️
+
 This is a full-stack web application built with Python and Google Gemini to serve as an AI-powered speaking coach. It enables users to practice real-time voice conversations in various dynamic scenarios and receive instant, detailed feedback on their performance.
 
-Live Demo
+### Live Demo
 [Add Your Live Render URL Here]
 
-✨ Key Features
-Real-time Voice Conversation: Engage in natural, voice-based conversations directly in your browser.
+---
+## ✨ Key Features
 
-Multiple Scenarios: Practice in three distinct, fully implemented modes:
+* **Real-time Voice Conversation:** Engage in natural, voice-based conversations directly in your browser.
+* **Multiple Scenarios:** Practice in three distinct, fully implemented modes:
+    * **💼 Interview Simulation:** A back-and-forth Q&A with an AI interviewer.
+    * **🗣️ Free Topic:** A monologue-style evaluation where you speak on a topic of your choice.
+    * **👥 Group Discussion:** A dynamic conversation where the AI plays two other participants with differing viewpoints.
+* **AI-Powered Feedback:** Receive a detailed report card after each session analyzing metrics like fluency, grammar, filler word usage, and tone.
+* **Persistent Session History:** All completed sessions and feedback reports are saved to a cloud database, allowing you to track your progress over time for each scenario.
 
-💼 Interview Simulation: A back-and-forth Q&A with an AI interviewer.
+---
+## 💻 Technology Stack
 
-🗣️ Free Topic: A monologue-style evaluation where you speak on a topic of your choice.
+* **Backend:** Python, Flask, Gunicorn
+* **Frontend:** JavaScript (ES6+), HTML5, CSS3, Web Speech API
+* **AI & NLP:** Google Gemini API, Prompt Engineering
+* **Database:** MongoDB (via MongoDB Atlas)
+* **Deployment:** Render, Git, GitHub
 
-👥 Group Discussion: A dynamic conversation where the AI plays two other participants with differing viewpoints.
+---
+## ⚠️ Browser Compatibility
 
-AI-Powered Feedback: Receive a detailed report card after each session analyzing metrics like fluency, grammar, filler word usage, and tone.
-
-Persistent Session History: All completed sessions and feedback reports are saved to a cloud database, allowing you to track your progress over time for each scenario.
-
-💻 Technology Stack
-Backend: Python, Flask, Gunicorn
-
-Frontend: JavaScript (ES6+), HTML5, CSS3, Web Speech API
-
-AI & NLP: Google Gemini API, Prompt Engineering
-
-Database: MongoDB (via MongoDB Atlas)
-
-Deployment: Render, Git, GitHub
-
-⚠️ Browser Compatibility
-This project relies heavily on the Web Speech API for voice recognition and synthesis. This API is still considered experimental and has the best support on desktop versions of Google Chrome.
+This project relies heavily on the **Web Speech API** for voice recognition and synthesis. This API is still considered experimental and has the best support on desktop versions of **Google Chrome**.
 
 While it may work on other browsers, functionality (especially continuous speech recognition) can be inconsistent. For the best experience, please use a modern version of Chrome on a desktop or laptop.
 
-🚀 Setup and Installation
+---
+## 🚀 Setup and Installation
+
 Follow these steps to get the project running on your local machine.
 
-1. Prerequisites
-Git
+#### 1. Prerequisites
+* Git
+* Python 3.10+
+* A Google AI API Key (for the Gemini model)
+* A MongoDB Atlas connection string
 
-Python 3.10+
+#### 2. Clone the Repository
 
-A Google AI API Key (for the Gemini model)
+```bash
 
-A MongoDB Atlas connection string
 
-2. Clone the Repository
 git clone [https://github.com/your-username/your-repo-name.git](https://github.com/your-username/your-repo-name.git)
 cd your-repo-name
 
