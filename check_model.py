@@ -1,5 +1,5 @@
 # check_models.py
-import google.generativeai as genai
+from groq import Groq
 import os
 from dotenv import load_dotenv
 
@@ -8,18 +8,17 @@ load_dotenv()
 
 try:
     # Configure the API key
-    api_key = os.getenv('GEMINI_API_KEY')
+    api_key = os.getenv('GROQ_API_KEY')
     if not api_key:
-        raise ValueError("GEMINI_API_KEY not found in .env file.")
+        raise ValueError("GROQ_API_KEY not found in .env file.")
 
-    genai.configure(api_key=api_key)
+    client = Groq(api_key=api_key)
 
     print("\n--- Finding available models for your API key ---\n")
 
-    # List all available models and check if they support 'generateContent'
-    for m in genai.list_models():
-        if 'generateContent' in m.supported_generation_methods:
-            print(f"✅ Found usable model: {m.name}")
+    # List all models currently available on Groq
+    for m in client.models.list().data:
+        print(f"✅ Found usable model: {m.id}")
 
     print("\n--- Finished ---\n")
 

@@ -3,7 +3,7 @@ import json
 from datetime import datetime
 from pymongo import MongoClient
 from bson import ObjectId
-import google.generativeai as genai
+from groq import Groq
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from dotenv import load_dotenv
@@ -53,14 +53,24 @@ def save_session_to_db(scenario, transcript, feedback_text):
 
 # --- AI Configuration ---
 try:
-    api_key = os.getenv('GEMINI_API_KEY')
+    api_key = os.getenv('GROQ_API_KEY')
     if not api_key:
-        raise ValueError("GEMINI_API_KEY not found.")
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('models/gemini-pro-latest')
+        raise ValueError("GROQ_API_KEY not found.")
+    groq_client = Groq(api_key=api_key)
+    GROQ_MODEL = os.getenv('GROQ_MODEL', 'openai/gpt-oss-120b')
 except Exception as e:
     print(f"🔴 Error configuring AI key: {e}")
     exit()
+
+# --- Function to get a completion from Groq ---
+def generate_text(prompt, json_mode=False):
+    kwargs = {"response_format": {"type": "json_object"}} if json_mode else {}
+    response = groq_client.chat.completions.create(
+        model=GROQ_MODEL,
+        messages=[{"role": "user", "content": prompt}],
+        **kwargs
+    )
+    return (response.choices[0].message.content or "").strip()
 
 # --- Prompts ---
 INTERVIEW_PROMPT = """
@@ -164,20 +174,16 @@ def generate_content():
         elif mode == 'feedback':
             scenario_for_db = data.get('scenario', 'unknown')
             full_prompt = FEEDBACK_PROMPT.format(transcript=conversation_history)
-            response = model.generate_content(
-                full_prompt,
-                generation_config=genai.types.GenerationConfig(response_mime_type="application/json")
-            )
-            save_session_to_db(scenario_for_db, conversation_history, response.text)
-            return jsonify({"feedback": response.text})
+            feedback_text = generate_text(full_prompt, json_mode=True)
+            save_session_to_db(scenario_for_db, conversation_history, feedback_text)
+            return jsonify({"feedback": feedback_text})
 
         if full_prompt:
-            response = model.generate_content(full_prompt)
-            return jsonify({"response": response.text})
+            return jsonify({"response": generate_text(full_prompt)})
 
     except Exception as e:
         print(f"🔴 An error occurred: {e}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)), debug=True)
